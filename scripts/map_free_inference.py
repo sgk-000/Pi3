@@ -22,7 +22,8 @@ from tqdm import tqdm
 
 MODEL_NAME = "pi3x"
 DEFAULT_MODEL_ID = "yyfz233/Pi3X"
-DEFAULT_DATASET_ROOT = Path("/mnt/ssd2/map_free")
+# DEFAULT_DATASET_ROOT = Path("/mnt/ssd2/map_free")
+DEFAULT_DATASET_ROOT = Path("/home/ubuntu/dataset/map_free")
 DEFAULT_OUTPUT_ROOT = DEFAULT_DATASET_ROOT / "pi3x_inference_outputs"
 DEFAULT_SPLIT = "train"
 DEFAULT_WINDOW_SIZE = 0

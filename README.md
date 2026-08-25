@@ -75,7 +75,8 @@ Overall, Pi3X offers slightly better reconstruction quality than the original $\
 ### 1. Clone & Install Dependencies
 First, clone the repository and use [uv](https://docs.astral.sh/uv/) to create
 the locked Python 3.12 environment in `.venv`. The default environment uses
-the official PyTorch CUDA 12.4 wheels for Linux x86-64.
+the official PyTorch CUDA 12.8 wheels for Linux x86-64, including
+Blackwell (`sm_120`) GPU support.
 ```bash
 git clone https://github.com/yyfz/Pi3.git
 cd Pi3
