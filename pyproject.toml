@@ -7,16 +7,46 @@ name = "pi3"
 version = "0.1"
 description = "pi3"
 readme = "README.md"
-requires-python = ">=3.10.0"
+requires-python = ">=3.10,<3.13"
 dependencies = [
+    "huggingface-hub",
+    "numpy==1.26.4",
+    "opencv-python",
+    "pillow",
+    "plyfile",
     "safetensors",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "tqdm",
 ]
 
-# Setuptools configuration
-[tool.setuptools]
-# Disable automatic package discovery to avoid conflicts
-packages = ["pi3"]
+[project.optional-dependencies]
+demo = [
+    "gradio",
+    "matplotlib",
+    "scipy",
+    "trimesh",
+]
 
-# Include package data
+[tool.setuptools.packages.find]
+include = ["pi3", "pi3.*"]
+
+[tool.uv]
+environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu124" }
+torchvision = { index = "pytorch-cu124" }
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
 [tool.setuptools.package-data]
 "pi3" = ["**/*"]

@@ -73,12 +73,17 @@ Overall, Pi3X offers slightly better reconstruction quality than the original $\
 ## 🚀 Quick Start
 
 ### 1. Clone & Install Dependencies
-First, clone the repository and install the required packages.
+First, clone the repository and use [uv](https://docs.astral.sh/uv/) to create
+the locked Python 3.12 environment in `.venv`. The default environment uses
+the official PyTorch CUDA 12.4 wheels for Linux x86-64.
 ```bash
 git clone https://github.com/yyfz/Pi3.git
 cd Pi3
-pip install -r requirements.txt
+uv sync --frozen
 ```
+
+`pyproject.toml` and `uv.lock` are the canonical dependency definitions. The
+legacy requirements files remain available for compatibility.
 
 ### 2\. Run Inference from Command Line
 
@@ -88,12 +93,12 @@ If the automatic download from Hugging Face is slow, you can download the model 
 
 ```bash
 # Run with the default example video
-# python example.py    # Inference with Pi3 (Original)
-python example_mm.py   # [New] Inference with Pi3X (Recommended)
+# uv run python example.py    # Inference with Pi3 (Original)
+uv run python example_mm.py   # [New] Inference with Pi3X (Recommended)
 
 # Run on your own data (image folder or .mp4 file)
-# python example.py --data_path <path/to/data>     # Pi3
-python example_mm.py --data_path <path/to/data>    # Pi3X
+# uv run python example.py --data_path <path/to/data>     # Pi3
+uv run python example_mm.py --data_path <path/to/data>    # Pi3X
 ```
 
 ### Advanced: Multimodal Conditioning (Pi3X Only)
@@ -102,10 +107,10 @@ To utilize additional input modalities (e.g., camera poses, intrinsics, or depth
 Below is an example comparing reconstruction with and without condition injection. You can compare the resulting point clouds to observe the improvements brought by multimodal inputs.
 ``` bash
 # 1. Inference WITH conditioning (poses, intrinsics, etc.)
-python example_mm.py --data_path examples/room/rgb --conditions_path examples/room/condition.npz --save_path examples/room_with_conditions.ply
+uv run python example_mm.py --data_path examples/room/rgb --conditions_path examples/room/condition.npz --save_path examples/room_with_conditions.ply
 
 # 2. Inference WITHOUT conditioning (image only)
-python example_mm.py --data_path examples/room/rgb --save_path examples/room_no_conditions.ply
+uv run python example_mm.py --data_path examples/room/rgb --save_path examples/room_no_conditions.ply
 ```
 
 **Optional Arguments:**
@@ -116,16 +121,48 @@ python example_mm.py --data_path examples/room/rgb --save_path examples/room_no_
   * `--ckpt`: Path to a custom model checkpoint file.
   * `--device`: Device to run inference on. (Default: `cuda`)
 
+### Map-Free Inference with Known Intrinsics (Pi3X Only)
+
+The native Map-Free script reads each selected frame's camera matrix from the
+scene's `intrinsics.txt`, applies the same resize/crop transform to the image
+and its intrinsics, and deterministically supplies the calibrated intrinsics to
+Pi3X. Ground-truth poses and depths are not used as model inputs.
+
+```bash
+# Process all seq0 + seq1 frames in one scene.
+uv run python scripts/map_free_inference.py \
+  --model pi3x \
+  --dataset-root /mnt/ssd2/map_free \
+  --split train \
+  --scenes s00000 \
+  --device cuda
+
+# Process only frames listed in a CSV, in 24-image windows at long side 714.
+uv run python scripts/map_free_inference.py \
+  --model pi3x \
+  --dataset-root /mnt/ssd2/map_free \
+  --image-list-csv /path/to/mapfree_image_paths.csv \
+  --num-images 24 \
+  --long-side-resolution 714 \
+  --device cuda
+```
+
+By default, outputs are written below
+`/mnt/ssd2/map_free/mapanything_inference_outputs/pi3x/`. Each numbered NPZ
+contains `frame_ids` and OpenCV camera-to-world `poses` in the same schema used
+by the MapAnything Map-Free inference pipeline. Use `--ckpt` for a local Pi3X
+checkpoint, or `--model-id` to select a Hugging Face model ID.
+
 ### 3\. Run with Gradio Demo
 
 You can also launch a local Gradio demo for an interactive experience.
 
 ```bash
-# Install demo-specific requirements
-pip install -r requirements_demo.txt
+# Add the optional demo dependencies to the project environment
+uv sync --frozen --extra demo
 
 # Launch the demo
-python demo_gradio.py
+uv run --extra demo python demo_gradio.py
 ```
 
 
